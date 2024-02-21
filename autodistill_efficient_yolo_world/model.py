@@ -4,9 +4,9 @@ from dataclasses import dataclass
 import torch
 
 import supervision as sv
-from autodistill.utils import load_image
+from autodistill.helpers import load_image
 from autodistill.detection import CaptionOntology, DetectionBaseModel
-from autodistill_yoloworld import YOLOWorldModel
+from autodistill_yolo_world import YOLOWorldModel
 from autodistill_efficientsam import EfficientSAM
 import numpy as np
 
@@ -25,13 +25,11 @@ class EfficientYOLOWorld(DetectionBaseModel):
     def predict(self, input: str, confidence: int = 0.5) -> sv.Detections:
         image = load_image(input)
 
-        result = self.detection_model.predict("bookshelf.jpeg", confidence=0.1).with_nms()
+        result = self.detection_model.predict(load_image(input), confidence=0.1).with_nms()
 
         result.mask = np.array([None] * len(result.xyxy))
 
         for i, [x_min, y_min, x_max, y_max] in enumerate(result.xyxy):
-            print(x_min, y_min, x_max, y_max)
-
             y_min, y_max = int(y_min), int(y_max)
             x_min, x_max = int(x_min), int(x_max)
             input_image = image[y_min:y_max, x_min:x_max]
